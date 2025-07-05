@@ -23,10 +23,19 @@ services:
       context: ./proxy
       dockerfile: Dockerfile
     container_name: proxy
+    depends_on:
+      - portal
+      - webmail
     ports:
-      - "80:80/tcp"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy:/etc/nginx/conf.d:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
     networks:
       - ispnet
+    command: [sh, -c, "nginx -g 'daemon off;' & while :; do sleep 6h; nginx -s reload; done"]
 
   mail:
     build:
@@ -55,6 +64,15 @@ services:
       - "8081:80/tcp"
     networks:
       - ispnet
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    # Comando otimizado para renovação
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do sleep 12h & wait $${!}; certbot renew -q; done'"
 
 networks:
   ispnet:
