@@ -10,7 +10,7 @@
 # Configurações
 CERT_NAME="sonserina"
 DOMAIN="proxy.sonserina.br"
-SSL_DIR="./proxy/ssl"
+SSL_DIR="../proxy/ssl"  # Caminho atualizado para ../proxy/ssl
 DAYS_VALID=365
 KEY_SIZE=2048
 

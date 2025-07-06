@@ -14,7 +14,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Configurações
 $certName = "sonserina"
 $domain = "proxy.sonserina.br"
-$sslFolder = "$PWD\proxy\ssl"
+$sslFolder = "$PWD\..\proxy\ssl"  # Caminho atualizado para ../proxy/ssl
 $daysValid = 365
 $keySize = 2048
 
