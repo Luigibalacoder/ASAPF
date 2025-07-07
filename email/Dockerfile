@@ -1,24 +1,28 @@
 FROM ubuntu:20.04
+
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt upgrade -y \
- && apt install -y postfix dovecot-imapd dovecot-pop3d syslog-ng mailutils \
- && rm -rf /var/lib/apt/lists/*
+RUN apt update
+RUN apt upgrade -y
 
-# Copia configs
-COPY main.cf /etc/postfix/main.cf
-COPY dovecot.conf /etc/dovecot/conf.d/10-mail.conf
-COPY dovecot-auth.conf.ext /etc/dovecot/conf.d/10-auth.conf.ext
-COPY dovecot-master.conf /etc/dovecot/conf.d/10-master.conf
+# Instala postfix, dovecot e syslog-ng
+RUN apt install -y postfix dovecot-imapd dovecot-pop3d syslog-ng
 
-# Cria usuários e seus Maildirs
-RUN for u in joao_marcos joao_victor jose_eduardo redes; do \
-      useradd -m -s /usr/sbin/nologin "$u" && \
-      echo "$u:redes" | chpasswd && \
-      mkdir -p /home/"$u"/Maildir/{cur,new,tmp} && \
-      chown -R "$u":"$u" /home/"$u"/Maildir ; \
-    done
+# Copia arquivos de configuração
+COPY main.cf /etc/postfix/
+COPY dovecot.conf /etc/dovecot/conf.d/
 
-EXPOSE 25 465 587 993
+# Criação de usuários
+RUN useradd -m joao_marcos
+RUN useradd -m joao_victor
+RUN useradd -m jose_eduardo
+RUN useradd -m redes
 
-CMD ["sh", "-c", "service syslog-ng start && service postfix start && service dovecot start && tail -F /var/log/mail.log"]
+# Definição de senhas
+RUN echo "joao_marcos:redes" | chpasswd
+RUN echo "joao_victor:redes" | chpasswd
+RUN echo "jose_eduardo:redes" | chpasswd
+RUN echo "redes:redes" | chpasswd
+
+# Inicialização dos serviços
+CMD ["sh", "-c", "service syslog-ng start ; service postfix start ; service dovecot start ; tail -F /var/log/mail.log"]

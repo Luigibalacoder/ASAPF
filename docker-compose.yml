@@ -29,10 +29,15 @@ services:
       - "80:80/tcp"
       - "443:443/tcp"
     volumes:
+      # Certificados SSL
       - ./proxy/ssl/sonserina.crt:/etc/nginx/ssl/sonserina.crt:ro
       - ./proxy/ssl/sonserina.key:/etc/nginx/ssl/sonserina.key:ro
+
+      # Seu index.html e 404.html
       - ./proxy/index.html:/usr/share/nginx/html/index.html:ro
       - ./proxy/404.html:/usr/share/nginx/html/404.html:ro
+
+      # Configuração customizada do nginx
       - ./proxy/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - ispnet
@@ -53,8 +58,8 @@ services:
     ports:
       - "25:25/tcp"
       - "587:587/tcp"
-      - "465:465/tcp"
-      - "993:993/tcp"
+      - "465:465/tcp"  # SMTPS
+      - "993:993/tcp"  # IMAPS
     volumes:
       - ./proxy/ssl/sonserina.crt:/etc/ssl/certs/sonserina.crt:ro
       - ./proxy/ssl/sonserina.key:/etc/ssl/private/sonserina.key:ro
@@ -66,19 +71,25 @@ services:
     image: roundcube/roundcubemail:latest
     container_name: webmail
     depends_on:
-      - mail
+      mail:
+        condition: service_started
     environment:
-      - ROUNDCUBEMAIL_DEFAULT_HOST=ssl://mail:993
-      - ROUNDCUBEMAIL_SMTP_SERVER=tls://mail:587
+      - ROUNDCUBEMAIL_DEFAULT_HOST=ssl://mail.sonserina.br
+      - ROUNDCUBEMAIL_SMTP_SERVER=tls://mail.sonserina.br
       - ROUNDCUBEMAIL_DEFAULT_PORT=993
-      - ROUNDCUBEMAIL_IMAP_HOST=ssl://mail
+      # Configurações adicionais de SSL
+      - ROUNDCUBEMAIL_IMAP_HOST=ssl://mail.sonserina.br
       - ROUNDCUBEMAIL_IMAP_PORT=993
       - ROUNDCUBEMAIL_SMTP_PORT=587
       - ROUNDCUBEMAIL_SMTP_AUTH_ON=true
       - ROUNDCUBEMAIL_TLS_SKIP_VERIFY=true
+      # Configuração de SQLite
       - ROUNDCUBEMAIL_DB_TYPE=sqlite
     volumes:
+      # Persiste o banco SQLite
       - roundcube_data:/var/roundcube
+      # Configuração customizada do Roundcube (opcional)
+
     networks:
       - ispnet
 

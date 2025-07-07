@@ -1,43 +1,49 @@
-# /etc/postfix/main.cf
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
 
-myhostname = mail.sonserina.br
-mydomain   = sonserina.br
-myorigin   = $mydomain
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name. The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
 
-smtpd_banner = $myhostname ESMTP $mail_name
+myorigin = sonserina.br
+
+smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu) IFRN/ASA
 biff = no
 
 append_dot_mydomain = no
+
 readme_directory = no
 
+# Compatibility level
 compatibility_level = 2
 
-# TLS
+# TLS settings (main.cf)
 smtpd_tls_cert_file = /etc/ssl/certs/sonserina.crt
-smtpd_tls_key_file  = /etc/ssl/private/sonserina.key
-smtpd_tls_security_level = may
+smtpd_tls_key_file = /etc/ssl/private/sonserina.key
+smtpd_tls_security_level = may  # ou "encrypt" para forçar TLS
+
 smtp_tls_CApath = /etc/ssl/certs
 smtp_tls_security_level = may
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
-# SASL via dovecot
+# SASL AUTH via Dovecot
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = private/auth
 smtpd_sasl_auth_enable = yes
 smtpd_sasl_security_options = noanonymous
 broken_sasl_auth_clients = yes
 
-# Permitir envio apenas autenticado ou de redes confiáveis
+# Restrição de envio: exige autenticação
 smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination
 
-# Destino e interfaces
-mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
-inet_interfaces = all
-inet_protocols  = ipv4
-mynetworks      = 172.18.0.0/16, 127.0.0.0/8
-
-# Entrega em Maildir
-home_mailbox = Maildir/
-mailbox_size_limit = 0
-recipient_delimiter = +
+myhostname = mail.sonserina.br
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
+mydestination = $myhostname, $myorigin, localhost, localhost.localdomain
+relayhost = 
+mynetworks = 172.18.0.0/16, 127.0.0.0/8, [::ffff:127.0.0.0]/104, [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = ipv4
+home_mailbox = Maildir/
